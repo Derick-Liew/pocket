@@ -6,6 +6,7 @@ import { fmt } from '../lib/money'
 import { useData } from '../lib/store'
 import { EntryForm } from './EntryForm'
 import { EntryList } from './EntryList'
+import { DueCard } from './Recurring'
 
 export function Home({ toast }: { toast: (m: string) => void }) {
   const { t, lang, main, accounts, entries, debts, fxVersion } = useData()
@@ -31,6 +32,8 @@ export function Home({ toast }: { toast: (m: string) => void }) {
 
   return (
     <>
+      <DueCard toast={toast} />
+
       <section className="card hero">
         <div className="lbl">{t.totalAssets}</div>
         <div className="big num">{fmt(view.total, main, lang)}</div>

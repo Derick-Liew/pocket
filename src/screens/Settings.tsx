@@ -6,6 +6,7 @@ import { currencyList, currencyName } from '../lib/money'
 import { useData } from '../lib/store'
 import { supabase } from '../lib/supabase'
 import { clearLocal } from '../lib/sync'
+import { RecurringSettings } from './Recurring'
 import type { Account } from '../lib/types'
 
 const KIND_LABEL = { zh: { spend: '可以花', save: '存款', protected: '受保护' }, en: { spend: 'Spendable', save: 'Savings', protected: 'Protected' } }
@@ -82,6 +83,8 @@ export function Settings({ onClose }: { onClose: () => void }) {
           <div style={{ marginTop: 12 }}><AccountEditor value={edit} onChange={setEdit} currencies={currencies} /></div>
         )}
       </section>
+
+      <RecurringSettings />
 
       <section className="card form">
         <button type="button" className="ghost" onClick={exportCsv}>{t.exportCsv}</button>

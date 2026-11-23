@@ -10,21 +10,27 @@ const KINDS = ['expense', 'income', 'transfer', 'debt'] as const
 
 interface Props {
   editing?: Entry | null
+  /** Starting values for a new entry (e.g. "repay this debt"). Ignored when editing. */
+  preset?: Partial<Entry>
+  /** Hide the kind switch (when the caller fixed the kind). */
+  lockKind?: boolean
   onDone?: (msg?: string) => void
+  onCancel?: () => void
 }
 
-export function EntryForm({ editing, onDone }: Props) {
+export function EntryForm({ editing, preset, lockKind, onDone, onCancel }: Props) {
   const { t, lang, accounts, categories, debts, settings, saveSettings, main } = useData()
-  const [kind, setKind] = useState<EntryKind>(editing?.kind ?? 'expense')
-  const [amount, setAmount] = useState(editing ? String(editing.amount) : '')
-  const [accountId, setAccountId] = useState(editing?.account_id ?? settings.last_account_id ?? accounts[0]?.id ?? '')
+  const init: Partial<Entry> | undefined = editing ?? preset
+  const [kind, setKind] = useState<EntryKind>(init?.kind ?? 'expense')
+  const [amount, setAmount] = useState(init?.amount ? String(init.amount) : '')
+  const [accountId, setAccountId] = useState(init?.account_id ?? settings.last_account_id ?? accounts[0]?.id ?? '')
   const acc = accounts.find(a => a.id === accountId)
-  const [currency, setCurrency] = useState(editing?.currency ?? acc?.currency ?? main)
-  const [toAccountId, setToAccountId] = useState(editing?.to_account_id ?? '')
-  const [categoryId, setCategoryId] = useState(editing?.category_id ?? '')
-  const [debtId, setDebtId] = useState(editing?.debt_id ?? '')
-  const [note, setNote] = useState(editing?.note ?? '')
-  const [date, setDate] = useState(editing?.date ?? today())
+  const [currency, setCurrency] = useState(init?.currency ?? acc?.currency ?? main)
+  const [toAccountId, setToAccountId] = useState(init?.to_account_id ?? '')
+  const [categoryId, setCategoryId] = useState(init?.category_id ?? '')
+  const [debtId, setDebtId] = useState(init?.debt_id ?? '')
+  const [note, setNote] = useState(init?.note ?? '')
+  const [date, setDate] = useState(init?.date ?? today())
   const [err, setErr] = useState('')
 
   // Default account once data has loaded.
@@ -83,18 +89,20 @@ export function EntryForm({ editing, onDone }: Props) {
 
   return (
     <div className="form">
-      <div className="seg" role="group" aria-label={t.addEntry}>
-        {KINDS.map(k => (
-          <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)}>{t[k]}</button>
-        ))}
-      </div>
+      {!lockKind && (
+        <div className="seg" role="group" aria-label={t.addEntry}>
+          {KINDS.map(k => (
+            <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)}>{t[k]}</button>
+          ))}
+        </div>
+      )}
 
       <div className="amount">
         {kind === 'transfer'
           ? <span className="cur-static">{transferCur}</span>
           : (
             <select className="cur" value={currency} onChange={e => setCurrency(e.target.value)} aria-label={t.mainCurrency}>
-              {currencies.map(c => <option key={c} value={c}>{c} · {currencyName(c, lang)}</option>)}
+              {currencies.map(c => <option key={c} value={c} label={c}>{c} · {currencyName(c, lang)}</option>)}
             </select>
           )}
         <input inputMode="decimal" placeholder="0.00" value={amount} aria-label={t.amount}
@@ -152,7 +160,7 @@ export function EntryForm({ editing, onDone }: Props) {
 
       {err && <p className="err" role="alert">{err}</p>}
       <div className="row2">
-        {editing && <button type="button" className="ghost" onClick={() => onDone?.()}>{t.cancel}</button>}
+        {(editing || onCancel) && <button type="button" className="ghost" onClick={() => (onCancel ? onCancel() : onDone?.())}>{t.cancel}</button>}
         <button type="button" className="primary" onClick={submit} disabled={!(value > 0)}>{editing ? t.update : t.save}</button>
       </div>
     </div>

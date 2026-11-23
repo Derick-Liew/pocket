@@ -2,7 +2,7 @@ import { db } from './db'
 import { supabase } from './supabase'
 import type { TableName } from './types'
 
-const TABLES: TableName[] = ['settings', 'accounts', 'categories', 'debts', 'fx_rates', 'entries', 'gigs', 'wishes']
+const TABLES: TableName[] = ['settings', 'accounts', 'categories', 'debts', 'fx_rates', 'entries', 'gigs', 'wishes', 'recurring']
 
 export type SyncState = 'idle' | 'syncing' | 'offline' | 'error'
 let state: SyncState = 'idle'
@@ -52,12 +52,15 @@ async function push(userId: string) {
     const { updated_at: _u, ...row } = it.row
     byTable.get(it.table)!.set(String(row.id), { ...row, user_id: userId })
   }
+  const sent = new Set<TableName>()
   for (const [table, rows] of byTable) {
     const { error } = await supabase.from(table).upsert([...rows.values()], { onConflict: 'user_id,id' })
+    // Table not created on the server yet: keep its rows queued, send the rest.
+    if (error?.code === 'PGRST205') continue
     if (error) throw error
+    sent.add(table)
   }
-  const last = items[items.length - 1].seq!
-  await db.outbox.where('seq').belowOrEqual(last).delete()
+  await db.outbox.bulkDelete(items.filter(it => sent.has(it.table)).map(it => it.seq!))
 }
 
 async function pull() {
@@ -71,6 +74,8 @@ async function pull() {
       // Re-read a few seconds back so a row committed during the last pull is never skipped.
       if (cursor) q = q.gt('updated_at', new Date(Date.parse(cursor) - 5000).toISOString())
       const { data, error } = await q
+      // A table the server doesn't have yet (schema step not run) is skipped, not fatal.
+      if (error?.code === 'PGRST205') break
       if (error) throw error
       if (!data?.length) break
       // Never overwrite a row that still has an unsent local edit.
@@ -88,7 +93,7 @@ async function pull() {
 /** Postgres numerics arrive as strings or numbers depending on size; make them numbers. */
 function normalise(r: Record<string, unknown>) {
   const out: Record<string, unknown> = { ...r }
-  for (const k of ['amount', 'to_amount', 'opening', 'budget', 'start_balance', 'planned_monthly', 'price']) {
+  for (const k of ['amount', 'to_amount', 'opening', 'budget', 'start_balance', 'planned_monthly', 'price', 'day']) {
     if (out[k] != null) out[k] = Number(out[k])
   }
   return out

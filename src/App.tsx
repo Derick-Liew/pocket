@@ -8,10 +8,13 @@ import { configured, supabase } from './lib/supabase'
 import { onSyncState, startAutoSync, sync, type SyncState } from './lib/sync'
 import type { Account, Category } from './lib/types'
 import { FirstRun } from './screens/FirstRun'
+import { Debts } from './screens/Debts'
 import { Home } from './screens/Home'
+import { Jobs } from './screens/Jobs'
 import { Login } from './screens/Login'
 import { Settings } from './screens/Settings'
 import { Usage } from './screens/Usage'
+import { Want } from './screens/Want'
 
 type Tab = 'home' | 'usage' | 'debts' | 'want' | 'jobs'
 const TABS: { id: Tab; icon: string; key: 'tabHome' | 'tabUsage' | 'tabDebts' | 'tabWant' | 'tabJobs' }[] = [
@@ -29,17 +32,21 @@ async function seedIfEmpty() {
   for (const c of seed.categories) await put('categories', c as Category)
 }
 
+// `npm run demo`: no Supabase, no sync — local fake data only, for trying the screens.
+const DEMO = import.meta.env.VITE_DEMO === '1'
+
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
 
   useEffect(() => {
+    if (DEMO) { void import('./demo').then(m => m.loadDemo()).then(() => refreshFx()).then(() => setSession({} as Session)); return }
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
     return () => data.subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
-    if (!session) return
+    if (!session || DEMO) return
     startAutoSync()
     // First sync decides whether this is a brand-new account that needs the defaults.
     void sync().then(async () => {
@@ -51,7 +58,7 @@ export default function App() {
     })
   }, [session])
 
-  if (!configured) return <main className="login"><p>Supabase is not set up yet — see README.md.</p></main>
+  if (!configured && !DEMO) return <main className="login"><p>Supabase is not set up yet — see README.md.</p></main>
   if (session === undefined) return null
   if (!session) return <Login />
   return <DataProvider><Shell /></DataProvider>
@@ -67,7 +74,7 @@ function Shell() {
   useEffect(() => onSyncState(setSyncState), [])
   useEffect(() => { history.replaceState(null, '', '#' + tab); window.scrollTo(0, 0) }, [tab])
   useEffect(() => { document.title = t.appName; document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en' }, [t, lang])
-  const toast = useCallback((m: string) => { setToastMsg(m); setTimeout(() => setToastMsg(''), 2400) }, [])
+  const toast = useCallback((m: string) => { setToastMsg(m); setTimeout(() => setToastMsg(""), m.length > 30 ? 6000 : 2400) }, [])
 
   const needsBalances = accounts.some(a => !a.opening_set)
   const status = syncState === 'syncing' ? t.syncing : syncState === 'offline' ? t.offline : syncState === 'error' ? t.syncError : ''
@@ -84,7 +91,9 @@ function Shell() {
         {!ready ? null : needsBalances && tab === 'home' ? <FirstRun /> : (
           tab === 'home' ? <Home toast={toast} /> :
           tab === 'usage' ? <Usage toast={toast} /> :
-          <section className="card"><p className="empty">{t.comingPhase2}</p></section>
+          tab === 'debts' ? <Debts toast={toast} /> :
+          tab === 'want' ? <Want toast={toast} /> :
+          <Jobs toast={toast} />
         )}
       </main>
 

@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Account, Category, Debt, Entry, FxDay, Settings, TableName } from './types'
+import type { Account, Category, Debt, Entry, FxDay, Gig, Recurring, Settings, TableName, Wish } from './types'
 
 export interface OutboxItem {
   seq?: number
@@ -12,8 +12,9 @@ class PocketDB extends Dexie {
   categories!: Table<Category, string>
   debts!: Table<Debt, string>
   entries!: Table<Entry, string>
-  gigs!: Table<Record<string, unknown> & { id: string }, string>
-  wishes!: Table<Record<string, unknown> & { id: string }, string>
+  gigs!: Table<Gig, string>
+  wishes!: Table<Wish, string>
+  recurring!: Table<Recurring, string>
   fx_rates!: Table<FxDay, string>
   settings!: Table<Settings, string>
   outbox!: Table<OutboxItem, number>
@@ -33,6 +34,7 @@ class PocketDB extends Dexie {
       outbox: '++seq',
       meta: 'key',
     })
+    this.version(2).stores({ recurring: 'id' })
   }
 }
 

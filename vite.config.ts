@@ -2,9 +2,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages serves the site at /pocket/.
-export default defineConfig({
-  base: process.env.POCKET_BASE ?? '/pocket/',
+// GitHub Pages serves the built site at /pocket/; the dev server uses /.
+export default defineConfig(({ command }) => ({
+  base: command === 'serve' ? '/' : '/pocket/',
   plugins: [
     react(),
     VitePWA({
@@ -30,4 +30,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

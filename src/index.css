@@ -130,3 +130,11 @@ nav.tabs button[aria-current='page'] { color: var(--accent); background: var(--a
 .login .form { text-align: left; }
 .login h1 { margin: 0; font-size: 24px; }
 .logo { font-size: 48px; }
+
+/* phase 2 */
+.sub-form { padding: 4px 0 12px; }
+.answer { background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }
+.tag.ok { background: var(--accent-soft); color: var(--accent); }
+.amount.small input { font-size: 20px; }
+.amount.small .cur { max-width: 74px; }
+.card.due { border-color: var(--warn); }
