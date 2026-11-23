@@ -115,10 +115,8 @@ for (let page = 1; !user; page++) {
   if (data.users.length < 200) break
 }
 if (!user) {
-  const { data, error } = await sb.auth.admin.createUser({ email, email_confirm: true })
-  if (error) throw error
-  user = data.user
-  console.log('created login for', email)
+  console.error('No login for ' + email + ' yet. Sign up in the app first, then run this again.')
+  process.exit(1)
 }
 
 for (const [table, rows] of Object.entries(plan)) {

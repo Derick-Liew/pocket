@@ -2,27 +2,26 @@ import { useState } from 'react'
 import { strings } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 
+// Email + password. (Supabase's built-in mailer can't carry a 6-digit code without custom SMTP,
+// and magic links open in Safari instead of the home-screen app on iPhone.)
 export function Login() {
   const t = strings[navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en']
+  const [mode, setMode] = useState<'in' | 'up'>('in')
   const [email, setEmail] = useState(() => { try { return localStorage.getItem('pocket:email') ?? '' } catch { return '' } })
-  const [code, setCode] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  async function send() {
+  async function submit() {
     setBusy(true); setMsg('')
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } })
+    const creds = { email: email.trim(), password }
+    const { data, error } = mode === 'in'
+      ? await supabase.auth.signInWithPassword(creds)
+      : await supabase.auth.signUp(creds)
     setBusy(false)
-    if (error) return setMsg(error.message)
     try { localStorage.setItem('pocket:email', email.trim()) } catch { /* private mode */ }
-    setSent(true); setMsg(t.codeSent)
-  }
-  async function verify() {
-    setBusy(true); setMsg('')
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' })
-    setBusy(false)
-    if (error) setMsg(t.wrongCode)
+    if (error) return setMsg(/confirm/i.test(error.message) ? t.confirmFirst : mode === 'in' ? t.wrongPassword : error.message)
+    if (mode === 'up' && !data.session) { setMsg(t.confirmFirst); setMode('in') }
   }
 
   return (
@@ -30,19 +29,22 @@ export function Login() {
       <div className="logo" aria-hidden>👛</div>
       <h1>{t.appName}</h1>
       <section className="card form">
+        <div className="seg">
+          <button type="button" aria-pressed={mode === 'in'} onClick={() => { setMode('in'); setMsg('') }}>{t.login}</button>
+          <button type="button" aria-pressed={mode === 'up'} onClick={() => { setMode('up'); setMsg('') }}>{t.signUp}</button>
+        </div>
         <label><span className="lbl">{t.email}</span>
-          <input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} disabled={sent} />
+          <input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
         </label>
-        {sent && (
-          <label><span className="lbl">{t.code}</span>
-            <input inputMode="numeric" autoComplete="one-time-code" maxLength={10} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} />
-          </label>
-        )}
+        <label><span className="lbl">{t.password}</span>
+          <input type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password}
+            onChange={e => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') void submit() }} />
+        </label>
+        {mode === 'up' && <p className="hint">{t.passwordHint}</p>}
         {msg && <p className="hint" role="status">{msg}</p>}
-        {!sent
-          ? <button type="button" className="primary" disabled={busy || !email.includes('@')} onClick={send}>{t.sendCode}</button>
-          : <button type="button" className="primary" disabled={busy || code.length < 6} onClick={verify}>{t.verify}</button>}
-        {sent && <button type="button" className="link" onClick={() => { setSent(false); setCode(''); setMsg('') }}>← {t.email}</button>}
+        <button type="button" className="primary" disabled={busy || !email.includes('@') || password.length < 8} onClick={submit}>
+          {mode === 'in' ? t.login : t.signUp}
+        </button>
       </section>
       <p className="hint">{t.install}</p>
     </main>
