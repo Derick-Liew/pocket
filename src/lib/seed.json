@@ -1,0 +1,162 @@
+{
+  "accounts": [
+    {
+      "id": "bank",
+      "name_zh": "银行户口",
+      "name_en": "Bank",
+      "currency": "MYR",
+      "kind": "spend",
+      "sort": 1
+    },
+    {
+      "id": "cash",
+      "name_zh": "现金",
+      "name_en": "Cash",
+      "currency": "MYR",
+      "kind": "spend",
+      "sort": 2
+    },
+    {
+      "id": "tng",
+      "name_zh": "Touch 'n Go",
+      "name_en": "Touch 'n Go",
+      "currency": "MYR",
+      "kind": "spend",
+      "sort": 3
+    },
+    {
+      "id": "saving",
+      "name_zh": "储蓄",
+      "name_en": "Saving",
+      "currency": "MYR",
+      "kind": "save",
+      "sort": 4
+    },
+    {
+      "id": "asnb",
+      "name_zh": "ASNB",
+      "name_en": "ASNB",
+      "currency": "MYR",
+      "kind": "save",
+      "sort": 5
+    },
+    {
+      "id": "invest",
+      "name_zh": "投资",
+      "name_en": "Invest",
+      "currency": "MYR",
+      "kind": "save",
+      "sort": 6
+    },
+    {
+      "id": "ptptn",
+      "name_zh": "PTPTN 专用",
+      "name_en": "PTPTN pot",
+      "currency": "MYR",
+      "kind": "protected",
+      "sort": 7
+    }
+  ],
+  "categories": [
+    {
+      "id": "food",
+      "kind": "expense",
+      "name_zh": "吃饭",
+      "name_en": "Food",
+      "icon": "🍜",
+      "budget": 0,
+      "sort": 1
+    },
+    {
+      "id": "transport",
+      "kind": "expense",
+      "name_zh": "交通",
+      "name_en": "Transport",
+      "icon": "🚌",
+      "budget": 0,
+      "sort": 2
+    },
+    {
+      "id": "rent",
+      "kind": "expense",
+      "name_zh": "房租",
+      "name_en": "Rent",
+      "icon": "🏠",
+      "budget": 0,
+      "sort": 3
+    },
+    {
+      "id": "internet",
+      "kind": "expense",
+      "name_zh": "网络",
+      "name_en": "Internet",
+      "icon": "📶",
+      "budget": 0,
+      "sort": 4
+    },
+    {
+      "id": "shopping",
+      "kind": "expense",
+      "name_zh": "购物",
+      "name_en": "Shopping",
+      "icon": "🛍️",
+      "budget": 0,
+      "sort": 5
+    },
+    {
+      "id": "film",
+      "kind": "expense",
+      "name_zh": "菲林",
+      "name_en": "Film",
+      "icon": "🎞️",
+      "budget": 0,
+      "sort": 6
+    },
+    {
+      "id": "misc",
+      "kind": "expense",
+      "name_zh": "杂费",
+      "name_en": "Misc",
+      "icon": "🧾",
+      "budget": 0,
+      "sort": 8
+    },
+    {
+      "id": "allowance",
+      "kind": "income",
+      "name_zh": "零用钱",
+      "name_en": "Allowance",
+      "icon": "💵",
+      "budget": 0,
+      "sort": 1
+    },
+    {
+      "id": "freelance",
+      "kind": "income",
+      "name_zh": "Freelance",
+      "name_en": "Freelance",
+      "icon": "📷",
+      "budget": 0,
+      "sort": 2
+    },
+    {
+      "id": "sell",
+      "kind": "income",
+      "name_zh": "卖东西",
+      "name_en": "Sold items",
+      "icon": "🏷️",
+      "budget": 0,
+      "sort": 3
+    },
+    {
+      "id": "other-in",
+      "kind": "income",
+      "name_zh": "其他",
+      "name_en": "Other",
+      "icon": "➕",
+      "budget": 0,
+      "sort": 4
+    }
+  ],
+  "debts": []
+}
