@@ -10,7 +10,7 @@ A simple money tracker for iPhone and Android. It's a PWA: open it in Safari or 
 1. Create a Supabase project, then run `supabase/schema.sql` in the SQL editor.
 2. Login is email + password. Sign up once in the app (and click the confirmation email), then run the migration.
 3. Local dev: create `.env.local` with `VITE_SUPABASE_URL=...` and `VITE_SUPABASE_KEY=<publishable/anon key>`, then run `npm run dev`.
-4. GitHub Pages: set the repo variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`, and set Pages → Source to "GitHub Actions".
+4. Deploy: `bash scripts/deploy.sh` builds with `.env.local` and pushes `dist/` to the `gh-pages` branch.
 
 ## Move old data in
 `node scripts/migrate.mjs --dry` shows what will be imported; drop `--dry` to write it. This reads `../finance/*.csv` and `../finance/.env` (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `POCKET_EMAIL`).
